@@ -28,16 +28,6 @@ con.connect(error => {
 
 con.query("SET SESSION wait_timeout = 7200")
 
-app.get('/home', (req, res) => {
-  con.query('SELECT * FROM users', (error, rows) => {
-    if (error) console.log(error)
-
-    else {
-      res.download(rows.json)
-    }
-  })
-})
-
 app.get('/auto', (req, res) => {
   const { login, password } = req.query
   con.query(`SELECT id FROM users WHERE login = ${login} AND password = ${password}`, (error, row) => {
