@@ -2,9 +2,6 @@ import Express from 'express'
 import mysql from 'mysql'
 import bodyParser from 'body-parser'
 
-import EventEmitter from 'events'
-EventEmitter.defaultMaxListeners = Infinity;
-
 const app = Express()
 
 app.use(bodyParser.json({ type: 'application.json' }))
