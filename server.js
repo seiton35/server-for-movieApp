@@ -27,7 +27,17 @@ con.connect(error => {
   else console.log('connected')
 })
 
-con.query("SET SESSION wait_timeout = 7200")
+con.query("SET SESSION wait_timeout = 7200")//два часа работы
+
+app.get('/home', (req, res) => {
+  con.query('SELECT * FROM users', (error, rows) => {
+    if (error) console.log(error)
+
+    else {
+      res.download(rows.json)
+    }
+  })
+})
 
 app.get('/auto', (req, res) => {
   const { login, password } = req.query
@@ -116,9 +126,7 @@ app.get('/allHistoryVideo', (req, res) => {
           if (err) console.error();
           else {
             let { id, title, link, img } = row[0]
-            // console.log(id,title,link,img);
             videoList.push({ id, title, link, img })
-            // console.log("viseoList :",videoList)
           }
         })
 
