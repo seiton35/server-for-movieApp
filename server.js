@@ -1,6 +1,7 @@
 import Express from 'express'
 import mysql from 'mysql'
 import bodyParser from 'body-parser'
+import bcrypt from "bcrypt";
 
 import EventEmitter from 'events'
 EventEmitter.defaultMaxListeners = Infinity;
@@ -43,35 +44,39 @@ app.get('/home', (req, res) => {
 
 app.get('/auto', (req, res) => {
   const { login, password } = req.query
-  con.query(`SELECT id FROM users WHERE login = ${login} AND password = ${password}`, (error, row) => {
+  con.query(`SELECT * FROM users WHERE login = '${login}'`, (error, row) => {
     if (error) console.error();
     else if (row.length != 0) {
-      res.send({ status: true, id: row[0].id })
+      const { id, hash, salt } = row[0]
+      const autoHash = bcrypt.hashSync(password, salt)
+      if (autoHash == hash) {
+        res.send({ status: true, id })
+      }
+      else res.send({ status: false })
     }
-    else res.send({ status: false })
   })
 })
 
 app.get('/registration', (req, res) => {
   const regMail = /^([a-z0-9_\-]+\.)*[a-z0-9_\-]+@([a-z0-9][a-z0-9\-]*[a-z0-9]\.)+[a-z]{2,4}$/i
-
   const { login, mail, password } = req.query
+
   if (login.match(/\w\w\w\w/i)) {
     if (mail.match(regMail)) {
       if (password.match(/\w\w\w\w\w\w/i)) {
 
+        const salt = bcrypt.genSaltSync(10)
+        const hash = bcrypt.hashSync(password, salt)
+
         con.query(`SELECT id FROM users WHERE login = '${login}' OR  mail = '${mail}'`, (error, rows) => {
           if (error) console.log(error);
           else if (!rows.length) {
-            con.query(`INSERT INTO users VALUES (NULL, '${login}','${mail}','${password}')`, (error, row) => {
+            con.query(`INSERT INTO users VALUES (NULL, '${login}','${mail}','${hash}', '${salt}')`, (error, row) => {
               if (error) console.log(error);
               else {
                 con.query(`SELECT id FROM users WHERE login = '${login}'`, (error, row) => {
                   if (error) console.log(error);
-                  else {
-                    const { id } = row[0]
-                    res.send({ regStatus: true, id })
-                  }
+                  else { res.send({ regStatus: true, id: row[0].id }) }
                 })
               }
             })
@@ -79,6 +84,8 @@ app.get('/registration', (req, res) => {
           else { res.send({ regStatus: false }) }
         })
       }
+    }
+    else {
     }
   }
 })
@@ -121,13 +128,13 @@ app.get('/allHistoryVideo', (req, res) => {
         con.query(`SELECT * FROM video WHERE id = ${id_video}`, (err, row) => {
           if (err) console.error();
           else {
-            let {id,title,link,img} = row[0]
+            let { id, title, link, img } = row[0]
             // console.log(id,title,link,img);
-            videoList.push({id,title,link,img})
+            videoList.push({ id, title, link, img })
             // console.log("viseoList :",videoList)
           }
         })
-        
+
       })
       setTimeout(() => {
         res.send(videoList)
