@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 
 const app = Express()
 
+const date = new Date()
+
 app.use(bodyParser.json({ type: 'application.json' }))
 app.use(bodyParser.urlencoded({ extended: true }))
 
@@ -139,13 +141,25 @@ app.get('/allHistoryVideo', (req, res) => {
 })
 
 app.get('/toHistory', (req, res) => {
-  const { idUser, idVideo } = req.query
+  const { userId, idVideo } = req.query
   con.query(`SELECT 1 FROM history WHERE id_video=${idVideo} AND id_user = ${idUser}`, (err, rows) => {
     if (err) { console.log(err) }
     else if (rows.length == 0) {
-      con.query(`INSERT INTO history VALUES(NULL, ${idUser}, ${idVideo})`, (err, rows) => {
+      con.query(`INSERT INTO history VALUES(NULL, ${userId}, ${idVideo})`, (err, rows) => {
         if (err) { console.log(err) }
       })
+    }
+  })
+})
+
+app.get('/sendComment', (req, res) => {
+  const { comment, userId, idVideo } = req.query
+  const datetime = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}`
+  con.query(`INSERT INTO comment VALUES (NULL, '${datetime}','${userId}', '${idVideo}', '${comment}')`,(err,row)=>{
+    if (err) {
+      console.log(err);
+    } else {
+      res.send({leaved:true})
     }
   })
 })
