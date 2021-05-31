@@ -142,7 +142,7 @@ app.get('/allHistoryVideo', (req, res) => {
 
 app.get('/toHistory', (req, res) => {
   const { userId, idVideo } = req.query
-  con.query(`SELECT 1 FROM history WHERE id_video=${idVideo} AND id_user = ${idUser}`, (err, rows) => {
+  con.query(`SELECT 1 FROM history WHERE id_video=${idVideo} AND id_user = ${userId}`, (err, rows) => {
     if (err) { console.log(err) }
     else if (rows.length == 0) {
       con.query(`INSERT INTO history VALUES(NULL, ${userId}, ${idVideo})`, (err, rows) => {
@@ -160,6 +160,17 @@ app.get('/sendComment', (req, res) => {
       console.log(err);
     } else {
       res.send({leaved:true})
+    }
+  })
+})
+
+app.get('/getComments', (req,res)=>{
+  const {videoId} = req.query
+  con.query(`SELECT * FROM comment WHERE id_video = ${videoId}`, (err,rows)=>{
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(rows)
     }
   })
 })
