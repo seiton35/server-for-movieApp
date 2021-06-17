@@ -31,20 +31,20 @@ con.connect(error => {
 
 con.query("SET SESSION wait_timeout = 7200")//два часа работы
 
-app.get('/home', (req, res) => {
+app.get('/', (req, res) => {
   con.query('SELECT * FROM users', (error, rows) => {
     if (error) console.log(error)
 
     else {
-      res.download(rows.json)
+      res.send(rows)
     }
   })
 })
 
 app.get('/auto', (req, res) => {
   const { login, password } = req.query
-  con.query(`SELECT * FROM users WHERE login = '${login}'`, (error, row) => {
-    if (error) console.error();
+  con.query(`SELECT * FROM users WHERE login = ${login}`, (error, row) => {
+    if (error) console.log(error)
     else if (row.length != 0) {
       const { id, hash, salt } = row[0]
       const autoHash = bcrypt.hashSync(password, salt)
@@ -53,6 +53,7 @@ app.get('/auto', (req, res) => {
       }
       else res.send({ status: false })
     }
+    else res.send({ status: false })
   })
 })
 
@@ -119,13 +120,13 @@ app.get('/allVideo', (req, res) => {
 app.get('/allHistoryVideo', (req, res) => {
   const idUser = req.query.idUser
   let videoList = new Array()
-  con.query(`SELECT id_video FROM history WHERE id_user=${idUser}`, (err, rows) => {
-    if (err) { console.log(err) }
+  con.query(`SELECT id_video FROM history WHERE id_user=${idUser}`, (error, rows) => {
+    if (error) console.log(error)
     else {
       rows.map((item, index) => {
         const { id_video } = item
-        con.query(`SELECT * FROM video WHERE id = ${id_video}`, (err, row) => {
-          if (err) console.error();
+        con.query(`SELECT * FROM video WHERE id = ${id_video}`, (error, row) => {
+          if (error) console.log(error)
           else {
             let { id, title, link, img } = row[0]
             videoList.push({ id, title, link, img })
